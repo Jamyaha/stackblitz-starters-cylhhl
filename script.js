@@ -1,6 +1,11 @@
-fetch('mock.json')  // Make sure this is the correct path to your mock.json
+fetch('mock.json')  
   .then(response => response.json())
   .then(students => {
+    // Generate GPA for each student (between 2.6 and 4.0)
+    students.forEach(student => {
+      student.gpa = (Math.random() * (4.0 - 2.6) + 2.6).toFixed(2); // Generate random GPA between 2.6 and 4.0 and round to two decimals
+    });
+
     const searchInput = document.getElementById('searchInput');
     const searchButton = document.getElementById('searchButton');
     const dropdown = document.getElementById('dropdown');
@@ -10,18 +15,16 @@ fetch('mock.json')  // Make sure this is the correct path to your mock.json
     const prevPageButton = document.getElementById('prevPage');
     const nextPageButton = document.getElementById('nextPage');
 
-    // Pagination variables
     let currentPage = 1;
     const resultsPerPage = 10;
+    let filteredStudents = [];
 
-    // Save search criteria to localStorage
     function saveSearchCriteria(criteria) {
       localStorage.setItem('searchCriteria', JSON.stringify(criteria));
     }
 
-    // Function to display students in the table
     function displayStudents(filteredStudents) {
-      studentListElement.innerHTML = '';  // Clear previous results
+      studentListElement.innerHTML = '';  
       if (filteredStudents.length > 0) {
         const start = (currentPage - 1) * resultsPerPage;
         const end = start + resultsPerPage;
@@ -35,17 +38,17 @@ fetch('mock.json')  // Make sure this is the correct path to your mock.json
             <td>${student.college}</td>
             <td>${student.classification}</td>
             <td>${student.email}</td>
+            <td>${student.gpa}</td> <!-- Display the GPA -->
           `;
           studentListElement.appendChild(row);
         });
 
-        // Show pagination buttons
         prevPageButton.style.display = currentPage > 1 ? 'inline-block' : 'none';
         nextPageButton.style.display = currentPage * resultsPerPage < filteredStudents.length ? 'inline-block' : 'none';
 
-        noResults.style.display = 'none';  // Hide "No results" message if there are results
+        noResults.style.display = 'none';  
       } else {
-        noResults.style.display = 'block';  // Show "No results" message if no results
+        noResults.style.display = 'block';  
       }
       resultsSection.style.display = filteredStudents.length > 0 ? 'block' : 'none';
     }
@@ -59,7 +62,7 @@ fetch('mock.json')  // Make sure this is the correct path to your mock.json
         return;
       }
 
-      const filteredStudents = students.filter(student => {
+      filteredStudents = students.filter(student => {
         const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
         const major = student.major.toLowerCase();
         const college = student.college.toLowerCase();
@@ -99,20 +102,6 @@ fetch('mock.json')  // Make sure this is the correct path to your mock.json
 
     // Function to change the page for pagination
     function changePage(direction) {
-      const searchText = searchInput.value.toLowerCase().trim();
-      const filteredStudents = students.filter(student => {
-        const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
-        const major = student.major.toLowerCase();
-        const college = student.college.toLowerCase();
-        const classification = student.classification.toLowerCase();
-        return (
-          fullName.includes(searchText) ||
-          major.includes(searchText) ||
-          college.includes(searchText) ||
-          classification.includes(searchText)
-        );
-      });
-      
       if (direction === 1) {
         currentPage++;
       } else if (direction === -1) {
@@ -122,14 +111,14 @@ fetch('mock.json')  // Make sure this is the correct path to your mock.json
     }
 
     // Event listeners
-    searchButton.addEventListener('click', filterStudents);  // Trigger search when button is clicked
+    searchButton.addEventListener('click', filterStudents);  
     searchInput.addEventListener('click', () => {
       dropdown.style.display = 'none'; // Close dropdown when clicking input
     });
 
     searchInput.addEventListener('input', () => {
       if (searchInput.value.trim().length < 3) {
-        dropdown.style.display = 'none'; // Hide dropdown if search text is too short
+        dropdown.style.display = 'none'; 
       } else {
         filterStudents();
       }
@@ -138,24 +127,14 @@ fetch('mock.json')  // Make sure this is the correct path to your mock.json
     prevPageButton.addEventListener('click', () => changePage(-1));
     nextPageButton.addEventListener('click', () => changePage(1));
 
+    // Close the dropdown if the user clicks outside of it
+    document.addEventListener('click', (event) => {
+      if (!dropdown.contains(event.target) && event.target !== searchInput) {
+        dropdown.style.display = 'none';
+      }
+    });
+
   })
   .catch(error => {
     console.error('Error fetching mock data:', error);
   });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
