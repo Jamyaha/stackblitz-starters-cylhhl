@@ -63,7 +63,6 @@
       margin-bottom: 10px;
     }
 
-    /* Dropdown styling */
     #dropdown {
       position: absolute;
       top: 45px;
@@ -170,32 +169,28 @@
       const searchInput = document.getElementById('searchInput').value.trim();
       
       if (searchInput) {
-        // Redirect to page2.html with search query as URL parameter
-        const searchQuery = encodeURIComponent(searchInput);  // Encodes special characters
-        window.location.href = `page2.html?query=${searchQuery}`; // Redirect
+        const searchQuery = encodeURIComponent(searchInput); 
+        window.location.href = `page2.html?query=${searchQuery}`;
       }
     });
 
     document.getElementById('clearSearchButton').addEventListener('click', function() {
-      document.getElementById('searchInput').value = '';  // Clear the input
-      document.getElementById('dropdown').style.display = 'none';  // Hide dropdown
+      document.getElementById('searchInput').value = '';  
+      document.getElementById('dropdown').style.display = 'none';  
     });
 
-    // Optional: Dropdown functionality
     const searchInput = document.getElementById('searchInput');
     const dropdown = document.getElementById('dropdown');
 
     searchInput.addEventListener('input', function() {
       const searchText = searchInput.value.toLowerCase().trim();
       if (searchText.length >= 3) {
-        dropdown.style.display = 'block'; // Show dropdown when 3 or more characters are typed
-        // Here you can populate the dropdown with search suggestions if needed.
+        dropdown.style.display = 'block';
       } else {
-        dropdown.style.display = 'none'; // Hide dropdown if less than 3 characters are typed
+        dropdown.style.display = 'none'; 
       }
     });
   </script>
 
 </body>
 </html>
-
