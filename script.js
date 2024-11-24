@@ -1,7 +1,7 @@
-fetch('mock.json')  
+fetch('mock.json')
   .then(response => response.json())
   .then(students => {
-    
+
     students.forEach(student => {
       student.gpa = (Math.random() * (4.0 - 2.6) + 2.6).toFixed(2); 
     });
@@ -37,7 +37,7 @@ fetch('mock.json')
           const studentId = student.id.toString();  
           const lastTwoDigits = studentId.slice(-2);  
           const email = `${firstNameLetter}${lastName}${lastTwoDigits}@tnstate.edu`;
-    
+
           const row = document.createElement('tr');
           row.innerHTML = `
             <td>${student.first_name} ${student.last_name}</td>
@@ -50,10 +50,10 @@ fetch('mock.json')
           `;
           studentListElement.appendChild(row);
         });
-    
+
         prevPageButton.style.display = currentPage > 1 ? 'inline-block' : 'none';
         nextPageButton.style.display = currentPage * resultsPerPage < filteredStudents.length ? 'inline-block' : 'none';
-    
+
         noResults.style.display = 'none';  
       } else {
         noResults.style.display = 'block';  
@@ -146,6 +146,3 @@ fetch('mock.json')
   .catch(error => {
     console.error('Error fetching mock data:', error);
   });
-
-
-  
