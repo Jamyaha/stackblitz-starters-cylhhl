@@ -105,34 +105,58 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const query = urlParams.get('query'); 
+      const query = urlParams.get('query'); // Get query parameter from URL
       const studentListElement = document.getElementById('studentList').getElementsByTagName('tbody')[0];
       const noResults = document.getElementById('noResults');
       const prevPageButton = document.getElementById('prevPage');
       const nextPageButton = document.getElementById('nextPage');
 
-      const students = [
-        { first_name: 'John', last_name: 'Doe', major: 'Computer Science', college: 'Engineering', classification: 'Sophomore', gpa: 3.6 },
-        { first_name: 'Jane', last_name: 'Smith', major: 'Mathematics', college: 'Arts & Sciences', classification: 'Junior', gpa: 3.8 },
-        { first_name: 'Michael', last_name: 'Johnson', major: 'Biology', college: 'Science', classification: 'Senior', gpa: 3.4 },
-        { first_name: 'Alice', last_name: 'Williams', major: 'Business', college: 'Business', classification: 'Freshman', gpa: 3.9 }
-      ];
+      let students = [];
+      
+      // Fetch the student data from mock.json (or wherever your actual data is)
+      fetch('mock.json')  
+        .then(response => response.json())
+        .then(data => {
+          students = data.map(student => {
+            // Add a random GPA to each student
+            student.gpa = (Math.random() * (4.0 - 2.6) + 2.6).toFixed(2); // GPA between 2.6 and 4.0
+            return student;
+          });
 
-      if (query) {
-        filterStudents(query);
-      }
+          if (query) {
+            filterStudents(query);
+          } else {
+            displayStudents(students);  // Show all students if no query parameter exists
+          }
+        })
+        .catch(error => console.error('Error fetching student data:', error));
 
       function filterStudents(query) {
         const filteredStudents = students.filter(student => {
           const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
-          return fullName.includes(query.toLowerCase());
+          const major = student.major.toLowerCase();
+          const college = student.college.toLowerCase();
+          const classification = student.classification.toLowerCase();
+          const gpa = student.gpa;
+
+          // Check if query matches GPA (if it's a number)
+          if (!isNaN(query)) {
+            const gpaQuery = parseFloat(query);
+            return gpa >= gpaQuery; // Filter by GPA >= query
+          }
+
+          // Search across multiple fields (name, major, college, classification)
+          return fullName.includes(query.toLowerCase()) ||
+                 major.includes(query.toLowerCase()) ||
+                 college.includes(query.toLowerCase()) ||
+                 classification.includes(query.toLowerCase());
         });
 
         displayStudents(filteredStudents);
       }
 
       function displayStudents(filteredStudents) {
-        studentListElement.innerHTML = '';
+        studentListElement.innerHTML = ''; // Clear existing table data
         if (filteredStudents.length > 0) {
           filteredStudents.forEach(student => {
             const row = document.createElement('tr');
@@ -141,7 +165,7 @@
               <td>${student.major}</td>
               <td>${student.college}</td>
               <td>${student.classification}</td>
-              <td>${student.first_name.toLowerCase().charAt(0)}${student.last_name.toLowerCase()}@tnstate.edu</td>
+              <td>${student.first_name.toLowerCase().charAt(0)}${student.last_name.toLowerCase()}@outlook.com</td>
               <td>${student.gpa}</td>
             `;
             studentListElement.appendChild(row);
@@ -150,7 +174,7 @@
           prevPageButton.style.display = 'inline-block';
           nextPageButton.style.display = 'inline-block';
         } else {
-          noResults.style.display = 'block';
+          noResults.style.display = 'block'; // Show "No results found" if no matches
         }
       }
 
@@ -163,7 +187,7 @@
       });
 
       document.getElementById('clearButton').addEventListener('click', () => {
-        window.location.href = 'index.html'; 
+        window.location.href = 'index.html'; // Redirect to the main search page
       });
     });
   </script>
