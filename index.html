@@ -5,18 +5,145 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Search</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f2f2f2;
+    }
+
+    .search-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #searchButton, #clearSearchButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    #searchButton:hover, #clearSearchButton:hover {
+      background-color: #1558b1;
+    }
+
+    #clearSearchButton {
+      background-color: #f44336;
+    }
+
+    #clearSearchButton:hover {
+      background-color: #d32f2f;
+    }
+
+    #searchInput {
+      padding: 12px 20px;
+      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 30px;
+      margin-bottom: 10px;
+    }
+
+    #dropdown {
+      position: absolute;
+      top: 45px;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+
+    .dropdown-item {
+      padding: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f1f1f1;
+    }
+
+    #resultsSection {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+    }
+
+    #studentList {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #studentList th, #studentList td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .pagination button {
+      padding: 5px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin: 0 5px;
+      border-radius: 5px;
+    }
+
+    .pagination button:hover {
+      background-color: #0056b3;
+    }
+
+    #noResults {
+      font-size: 18px;
+      color: #ff0000;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
+
   <div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search...">
-    <button id="searchButton">Search</button>
+    <div class="button-container">
+      <button id="searchButton">Search</button>
+      <button id="clearSearchButton">Clear</button>
+    </div>
+    <input type="text" id="searchInput" placeholder="Search students...">
+    <div id="dropdown"></div>
   </div>
   
-  <div id="dropdown" class="dropdown-menu"></div>
-  
-  <!-- Section that holds the search results and no-results message -->
-  <section id="resultsSection" style="display: none;">
-    <div id="noResults" style="display: none; font-size: 18px; color: #ff0000;">No results found :(</div> <!-- Message when no results found -->
+  <section id="resultsSection">
+    <div id="noResults" style="display: none;">No results found :(</div>
     <table id="studentList">
       <thead>
         <tr>
@@ -26,6 +153,7 @@
           <th>College</th>
           <th>Classification</th>
           <th>Email</th>
+          <th>GPA</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -35,18 +163,34 @@
       <button id="nextPage" style="display: none;">Next</button>
     </div>
   </section>
-  <script src="script.js"></script>
+
+  <script>
+    document.getElementById('searchButton').addEventListener('click', function() {
+      const searchInput = document.getElementById('searchInput').value.trim();
+      
+      if (searchInput) {
+        const searchQuery = encodeURIComponent(searchInput);
+        window.location.href = `page2.html?query=${searchQuery}`;
+      }
+    });
+
+    document.getElementById('clearSearchButton').addEventListener('click', function() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('dropdown').style.display = 'none';
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    const dropdown = document.getElementById('dropdown');
+
+    searchInput.addEventListener('input', function() {
+      const searchText = searchInput.value.toLowerCase().trim();
+      if (searchText.length >= 3) {
+        dropdown.style.display = 'block';
+      } else {
+        dropdown.style.display = 'none';
+      }
+    });
+  </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
