@@ -146,5 +146,3 @@ fetch('mock.json')
   .catch(error => {
     console.error('Error fetching mock data:', error);
   });
-
-
