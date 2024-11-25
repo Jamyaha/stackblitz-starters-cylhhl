@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +14,7 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      background-color: #f2f2f2;
+      background-color: #00973a9f;
     }
 
     .search-container {
@@ -21,8 +22,42 @@
       flex-direction: column;
       align-items: center;
       width: 100%;
-      max-width: 600px;
+      max-width: 400px;
       position: relative;
+    }
+
+    #searchInput {
+      padding: 12px 20px;
+      font-size: 16px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 30px;
+      margin: 0;
+      transition: border 0.3s ease;
+    }
+
+    #dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background-color: rgb(255, 255, 255);
+      border: 1px solid #000000;
+      border-radius: 0 0 30px 30px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+
+    .dropdown-item {
+      padding: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f1f1f1;
     }
 
     .button-container {
@@ -51,40 +86,6 @@
 
     #clearSearchButton:hover {
       background-color: #d32f2f;
-    }
-
-    #searchInput {
-      padding: 12px 20px;
-      font-size: 16px;
-      width: 100%;
-      max-width: 400px;
-      border: 1px solid #ccc;
-      border-radius: 30px;
-      margin-bottom: 10px;
-    }
-
-    #dropdown {
-      position: absolute;
-      top: 45px;
-      left: 0;
-      width: 100%;
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 1000;
-      display: none;
-    }
-
-    .dropdown-item {
-      padding: 10px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .dropdown-item:hover {
-      background-color: #f1f1f1;
     }
 
     #resultsSection {
@@ -139,7 +140,7 @@
       <button id="clearSearchButton">Clear</button>
     </div>
     <input type="text" id="searchInput" placeholder="Search students...">
-    <div id="dropdown"></div>
+    <div id="dropdown" role="listbox" aria-expanded="false"></div>
   </div>
   
   <section id="resultsSection">
@@ -153,30 +154,36 @@
           <th>College</th>
           <th>Classification</th>
           <th>Email</th>
-          <th>GPA</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
-    <div class="pagination">
-      <button id="prevPage" style="display: none;">Previous</button>
-      <button id="nextPage" style="display: none;">Next</button>
-    </div>
   </section>
 
   <script>
+    let students = [];
+
+    fetch('mock.json')
+      .then(response => response.json())
+      .then(data => {
+        students = data;
+      })
+      .catch(error => console.error('Error fetching student data:', error));
+
     document.getElementById('searchButton').addEventListener('click', function() {
       const searchInput = document.getElementById('searchInput').value.trim();
-      
       if (searchInput) {
-        const searchQuery = encodeURIComponent(searchInput); 
+        const searchQuery = encodeURIComponent(searchInput);
         window.location.href = `page2.html?query=${searchQuery}`;
       }
+      document.getElementById('dropdown').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
     });
 
     document.getElementById('clearSearchButton').addEventListener('click', function() {
-      document.getElementById('searchInput').value = '';  
-      document.getElementById('dropdown').style.display = 'none';  
+      document.getElementById('searchInput').value = '';
+      document.getElementById('dropdown').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
     });
 
     const searchInput = document.getElementById('searchInput');
@@ -184,13 +191,52 @@
 
     searchInput.addEventListener('input', function() {
       const searchText = searchInput.value.toLowerCase().trim();
+      
       if (searchText.length >= 3) {
-        dropdown.style.display = 'block';
+        const filteredStudents = students.filter(student =>
+          `${student.first_name} ${student.last_name}`.toLowerCase().includes(searchText)
+        );
+        
+        dropdown.innerHTML = '';
+        
+        if (filteredStudents.length > 0) {
+          filteredStudents.forEach(student => {
+            const div = document.createElement('div');
+            div.classList.add('dropdown-item');
+            div.textContent = `${student.first_name} ${student.last_name}`;
+            div.addEventListener('click', function() {
+              searchInput.value = `${student.first_name} ${student.last_name}`;
+              dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(div);
+          });
+          dropdown.style.display = 'block';
+          dropdown.setAttribute('aria-expanded', 'true');
+          document.getElementById('noResults').style.display = 'none';
+        } else {
+          dropdown.style.display = 'none';
+          document.getElementById('noResults').style.display = 'block';
+        }
       } else {
-        dropdown.style.display = 'none'; 
+        dropdown.style.display = 'none';
+        document.getElementById('noResults').style.display = 'none';
+      }
+    });
+
+    document.addEventListener('click', function(event) {
+      if (!dropdown.contains(event.target) && event.target !== searchInput) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    searchInput.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        document.getElementById('searchButton').click();
       }
     });
   </script>
 
 </body>
 </html>
+
+
