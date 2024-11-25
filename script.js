@@ -3,7 +3,7 @@ fetch('mock.json')
   .then(students => {
 
     students.forEach(student => {
-      student.gpa = (Math.random() * (4.0 - 2.6) + 2.6).toFixed(2); // GPA between 2.6 and 4.0
+      student.gpa = (Math.random() * (4.0 - 2.6) + 2.6).toFixed(2); 
     });
 
     const searchInput = document.getElementById('searchInput');
