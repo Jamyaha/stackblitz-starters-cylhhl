@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      background-color: #2f2f32;
       margin: 0;
       padding: 0;
       display: flex;
@@ -19,7 +19,11 @@
 
     .results-container {
       width: 80%;
-      max-width: 800px;
+      max-width: 1000px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     #studentList {
@@ -46,7 +50,7 @@
       border: none;
       cursor: pointer;
       margin: 0 5px;
-      border-radius: 20px;
+      border-radius: 5px;
     }
 
     .pagination button:hover {
@@ -84,11 +88,13 @@
     <table id="studentList">
       <thead>
         <tr>
-          <th>Full Name</th><th>Major</th>
+          <th>Full Name</th>
+          <th>Major</th>
           <th>College</th>
           <th>Classification</th>
           <th>Email</th>
           <th>GPA</th>
+          <th>Employer</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -112,45 +118,45 @@
       const nextPageButton = document.getElementById('nextPage');
 
       let students = [];
+      let filteredStudents = [];
       let currentPage = 1;
       const studentsPerPage = 10;
 
-      fetch('mock.json')  
+      fetch('mock.json')
         .then(response => response.json())
         .then(data => {
-          students = data.map(student => {
-            student.gpa = (Math.random() * (4.0 - 2.6) + 2.6).toFixed(2);
-            return student;
-          });
-
+          students = data;
           if (query) {
             filterStudents(query);
           } else {
-            displayStudents(students); 
+            filteredStudents = students;
+            displayStudents();
           }
         })
         .catch(error => console.error('Error fetching student data:', error));
 
       function filterStudents(query) {
-        const filteredStudents = students.filter(student => {
+        filteredStudents = students.filter(student => {
           const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
+          const firstName = student.first_name.toLowerCase();
+          const lastName = student.last_name.toLowerCase();
           const major = student.major.toLowerCase();
           const college = student.college.toLowerCase();
           const classification = student.classification.toLowerCase();
-          const gpa = student.gpa;
 
           if (!isNaN(query)) {
             const gpaQuery = parseFloat(query);
-            return gpa >= gpaQuery;
+            return student.gpa >= gpaQuery;
           }
 
-          return fullName.includes(query.toLowerCase()) ||
+          return firstName.includes(query.toLowerCase()) ||
+                 lastName.includes(query.toLowerCase()) ||
                  major.includes(query.toLowerCase()) ||
                  college.includes(query.toLowerCase()) ||
                  classification.includes(query.toLowerCase());
         });
 
-        displayStudents(filteredStudents);
+        displayStudents();
       }
 
       function generateEmail(firstName, lastName) {
@@ -174,7 +180,7 @@
         return email;
       }
 
-      function displayStudents(filteredStudents) {
+      function displayStudents() {
         studentListElement.innerHTML = '';
         const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
         const startIndex = (currentPage - 1) * studentsPerPage;
@@ -191,6 +197,7 @@
               <td>${student.classification}</td>
               <td>${generateEmail(student.first_name, student.last_name)}</td>
               <td>${student.gpa}</td>
+              <td>${student.employer || 'N/A'}</td>
             `;
             studentListElement.appendChild(row);
           });
@@ -205,15 +212,15 @@
       prevPageButton.addEventListener('click', () => {
         if (currentPage > 1) {
           currentPage--;
-          displayStudents(students);
+          displayStudents();
         }
       });
 
       nextPageButton.addEventListener('click', () => {
-        const totalPages = Math.ceil(students.length / studentsPerPage);
+        const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
         if (currentPage < totalPages) {
           currentPage++;
-          displayStudents(students);
+          displayStudents();
         }
       });
 
