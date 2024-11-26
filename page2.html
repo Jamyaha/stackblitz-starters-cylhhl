@@ -78,6 +78,60 @@
       text-align: center;
       display: none;
     }
+
+    .preview-btn {
+      padding: 5px 10px;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .preview-btn:hover {
+      background-color: darkred;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0,0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+    }
+
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 25px;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -95,6 +149,7 @@
           <th>Email</th>
           <th>GPA</th>
           <th>Employer</th>
+          <th>Preview</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -108,120 +163,129 @@
     <button id="clearButton">Back to Search</button>
   </div>
 
+  <!-- The Modal -->
+  <div id="studentModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Student Details</h2>
+      <table>
+        <tr>
+          <th>Full Name</th>
+          <td id="modalFullName"></td>
+        </tr>
+        <tr>
+          <th>Major</th>
+          <td id="modalMajor"></td>
+        </tr>
+        <tr>
+          <th>College</th>
+          <td id="modalCollege"></td>
+        </tr>
+        <tr>
+          <th>Classification</th>
+          <td id="modalClassification"></td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td id="modalEmail"></td>
+        </tr>
+        <tr>
+          <th>GPA</th>
+          <td id="modalGpa"></td>
+        </tr>
+        <tr>
+          <th>Employer</th>
+          <td id="modalEmployer"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const query = urlParams.get('query');
+      const students = [];
       const studentListElement = document.getElementById('studentList').getElementsByTagName('tbody')[0];
-      const noResults = document.getElementById('noResults');
       const prevPageButton = document.getElementById('prevPage');
       const nextPageButton = document.getElementById('nextPage');
-
-      let students = [];
-      let filteredStudents = [];
+      const noResults = document.getElementById('noResults');
+      const studentModal = document.getElementById('studentModal');
+      const closeModalButton = document.getElementsByClassName('close')[0];
       let currentPage = 1;
-      const studentsPerPage = 10;
+      const resultsPerPage = 10;
 
       fetch('mock.json')
         .then(response => response.json())
         .then(data => {
-          students = data;
-          if (query) {
-            filterStudents(query);
-          } else {
-            filteredStudents = students;
-            displayStudents();
-          }
+          students.push(...data);
+          displayStudents();
         })
         .catch(error => console.error('Error fetching student data:', error));
 
-      function filterStudents(query) {
-        filteredStudents = students.filter(student => {
-          const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
-          const firstName = student.first_name.toLowerCase();
-          const lastName = student.last_name.toLowerCase();
-          const major = student.major.toLowerCase();
-          const college = student.college.toLowerCase();
-          const classification = student.classification.toLowerCase();
-
-          if (!isNaN(query)) {
-            const gpaQuery = parseFloat(query);
-            return student.gpa >= gpaQuery;
-          }
-
-          return firstName.includes(query.toLowerCase()) ||
-                 lastName.includes(query.toLowerCase()) ||
-                 major.includes(query.toLowerCase()) ||
-                 college.includes(query.toLowerCase()) ||
-                 classification.includes(query.toLowerCase());
-        });
-
-        displayStudents();
-      }
-
-      function generateEmail(firstName, lastName) {
-        const randomNumber = Math.floor(Math.random() * (999 - 10 + 1)) + 10;
-        const format = Math.floor(Math.random() * 3);
-
-        let email = '';
-
-        switch (format) {
-          case 0:
-            email = `${firstName.charAt(0).toLowerCase()}${lastName.toLowerCase()}${randomNumber}@outlook.com`;
-            break;
-          case 1:
-            email = `${firstName.substring(0, 3).toLowerCase()}${lastName.toLowerCase()}${randomNumber}@outlook.com`;
-            break;
-          case 2:
-            email = `${lastName.toLowerCase()}${firstName.substring(0, 3).toLowerCase()}${randomNumber}@outlook.com`;
-            break;
-        }
-
-        return email;
-      }
-
       function displayStudents() {
         studentListElement.innerHTML = '';
-        const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
-        const startIndex = (currentPage - 1) * studentsPerPage;
-        const endIndex = startIndex + studentsPerPage;
-        const currentStudents = filteredStudents.slice(startIndex, endIndex);
+        const filteredStudents = students.slice((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage);
 
-        if (currentStudents.length > 0) {
-          currentStudents.forEach(student => {
+        if (filteredStudents.length > 0) {
+          filteredStudents.forEach(student => {
             const row = document.createElement('tr');
             row.innerHTML = `
               <td>${student.first_name} ${student.last_name}</td>
               <td>${student.major}</td>
               <td>${student.college}</td>
               <td>${student.classification}</td>
-              <td>${generateEmail(student.first_name, student.last_name)}</td>
+              <td>${student.first_name.charAt(0).toLowerCase()}${student.last_name.toLowerCase()}@tnstate.edu</td>
               <td>${student.gpa}</td>
               <td>${student.employer || 'N/A'}</td>
+              <td><button class="preview-btn" data-id="${student.id}">Preview</button></td>
             `;
             studentListElement.appendChild(row);
           });
 
           prevPageButton.style.display = currentPage > 1 ? 'inline-block' : 'none';
-          nextPageButton.style.display = currentPage < totalPages ? 'inline-block' : 'none';
+          nextPageButton.style.display = currentPage * resultsPerPage < students.length ? 'inline-block' : 'none';
+          noResults.style.display = 'none';
         } else {
           noResults.style.display = 'block';
         }
       }
 
-      prevPageButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          displayStudents();
+      studentListElement.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('preview-btn')) {
+          const studentId = e.target.getAttribute('data-id');
+          const student = students.find(s => s.id === parseInt(studentId));
+
+          if (student) {
+            document.getElementById('modalFullName').textContent = `${student.first_name} ${student.last_name}`;
+            document.getElementById('modalMajor').textContent = student.major;
+            document.getElementById('modalCollege').textContent = student.college;
+            document.getElementById('modalClassification').textContent = student.classification;
+            document.getElementById('modalEmail').textContent = `${student.first_name.charAt(0).toLowerCase()}${student.last_name.toLowerCase()}@tnstate.edu`;
+            document.getElementById('modalGpa').textContent = student.gpa;
+            document.getElementById('modalEmployer').textContent = student.employer || 'N/A';
+
+            studentModal.style.display = 'block';
+          }
         }
       });
 
-      nextPageButton.addEventListener('click', () => {
-        const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
-        if (currentPage < totalPages) {
-          currentPage++;
-          displayStudents();
+      closeModalButton.addEventListener('click', () => {
+        studentModal.style.display = 'none';
+      });
+
+      window.addEventListener('click', (e) => {
+        if (e.target === studentModal) {
+          studentModal.style.display = 'none';
         }
+      });
+
+      prevPageButton.addEventListener('click', () => {
+        currentPage--;
+        displayStudents();
+      });
+
+      nextPageButton.addEventListener('click', () => {
+        currentPage++;
+        displayStudents();
       });
 
       document.getElementById('clearButton').addEventListener('click', () => {
