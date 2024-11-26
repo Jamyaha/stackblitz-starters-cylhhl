@@ -59,6 +59,71 @@
       background-color: #f1f1f1;
     }
 
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #searchButton, #clearSearchButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    #searchButton:hover, #clearSearchButton:hover {
+      background-color: #1558b1;
+    }
+
+    #clearSearchButton {
+      background-color: #f44336;
+    }
+
+    #clearSearchButton:hover {
+      background-color: #d32f2f;
+    }
+
+    #resultsSection {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 20px;
+    }
+
+    #studentList {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #studentList th, #studentList td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .pagination {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .pagination button {
+      padding: 5px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin: 0 5px;
+      border-radius: 5px;
+    }
+
+    .pagination button:hover {
+      background-color: #0056b3;
+    }
+
     #noResults {
       font-size: 18px;
       color: #ff0000;
@@ -69,10 +134,31 @@
 <body>
 
   <div class="search-container">
+    <div class="button-container">
+      <button id="searchButton">Search</button>
+      <button id="clearSearchButton">Clear</button>
+    </div>
     <input type="text" id="searchInput" placeholder="Search students...">
     <div id="dropdown" role="listbox" aria-expanded="false"></div>
   </div>
   
+  <section id="resultsSection">
+    <div id="noResults" style="display: none;">No results found :(</div>
+    <table id="studentList">
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>ID</th>
+          <th>Major</th>
+          <th>College</th>
+          <th>Classification</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
   <script>
     let students = [];
 
@@ -83,51 +169,43 @@
       })
       .catch(error => console.error('Error fetching student data:', error));
 
+    document.getElementById('searchButton').addEventListener('click', function() {
+      const searchInput = document.getElementById('searchInput').value.trim();
+      if (searchInput) {
+        const searchQuery = encodeURIComponent(searchInput);
+        window.location.href = `page2.html?query=${searchQuery}`;
+      }
+      document.getElementById('dropdown').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
+    });
+
+    document.getElementById('clearSearchButton').addEventListener('click', function() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('dropdown').style.display = 'none';
+      document.getElementById('noResults').style.display = 'none';
+    });
+
     const searchInput = document.getElementById('searchInput');
     const dropdown = document.getElementById('dropdown');
 
-    function calculateSimilarity(query, name) {
-      let score = 0;
-      let lowerQuery = query.toLowerCase();
-      let lowerName = name.toLowerCase();
-
-      
-      if (lowerName.startsWith(lowerQuery)) {
-        score += 100;  
-      }
-
-      
-      for (let i = 0; i < query.length; i++) {
-        if (lowerName[i] === lowerQuery[i]) {
-          score++;
-        }
-      }
-
-      return score;
-    }
-
     searchInput.addEventListener('input', function() {
-      const searchText = searchInput.value.trim();
-
+      const searchText = searchInput.value.toLowerCase().trim();
+      
       if (searchText.length >= 3) {
-        const filteredStudents = students.map(student => {
-          const fullName = `${student.first_name} ${student.last_name}`;
-          const similarityScore = calculateSimilarity(searchText, fullName);
-          return { student, similarityScore };
-        }).filter(item => item.similarityScore > 0);
-
-        filteredStudents.sort((a, b) => b.similarityScore - a.similarityScore);
-
+        const filteredStudents = students.filter(student =>
+          `${student.first_name} ${student.last_name}`.toLowerCase().includes(searchText)
+        );
+        
         dropdown.innerHTML = '';
         
         if (filteredStudents.length > 0) {
-          filteredStudents.forEach(item => {
+          filteredStudents.forEach(student => {
             const div = document.createElement('div');
             div.classList.add('dropdown-item');
-            div.textContent = `${item.student.first_name} ${item.student.last_name}`;
+            div.textContent = `${student.first_name} ${student.last_name}`;
             div.addEventListener('click', function() {
-              searchInput.value = `${item.student.first_name} ${item.student.last_name}`;
-              const studentName = `${item.student.first_name} ${item.student.last_name}`;
+              searchInput.value = `${student.first_name} ${student.last_name}`;
+              const studentName = `${student.first_name} ${student.last_name}`;
               const searchQuery = encodeURIComponent(studentName);
               window.location.href = `page2.html?query=${searchQuery}`;
               dropdown.style.display = 'none';
@@ -136,11 +214,14 @@
           });
           dropdown.style.display = 'block';
           dropdown.setAttribute('aria-expanded', 'true');
+          document.getElementById('noResults').style.display = 'none';
         } else {
           dropdown.style.display = 'none';
+          document.getElementById('noResults').style.display = 'block';
         }
       } else {
         dropdown.style.display = 'none';
+        document.getElementById('noResults').style.display = 'none';
       }
     });
 
@@ -152,11 +233,11 @@
 
     searchInput.addEventListener('keydown', function(event) {
       if (event.key === 'Enter') {
-        const searchQuery = encodeURIComponent(searchInput.value);
-        window.location.href = `page2.html?query=${searchQuery}`;
+        document.getElementById('searchButton').click();
       }
     });
   </script>
 
 </body>
 </html>
+
